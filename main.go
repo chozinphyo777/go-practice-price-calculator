@@ -9,17 +9,25 @@ import (
 
 func main() {
 	taxRates := []float64{0, 0.07, 0.1, 0.15}
-	for _, taxRate := range taxRates {
+	doneChans := make([]chan bool, len(taxRates))
+	for index, taxRate := range taxRates {
+		doneChans[index] = make(chan bool) // create a channel to send a signal to the main thread that the job is done
 		fm := filemanager.New("prices.txt", fmt.Sprintf("results_%.0f.json", taxRate*100))
 		//cmd := cmdmanager.New()
 
 		priceJob := prices.NewTaxIncludedPriceJob(fm, taxRate)
 
-		err := priceJob.Process()
-		if err != nil {
-			fmt.Println("Error processing price job: ", err)
-			return
-		}
+		go priceJob.Process(doneChans[index]) // process the price job in a goroutine
+
+		// if err != nil {
+		// 	fmt.Println("Error processing price job: ", err)
+		// 	return
+		// }
+	}
+
+	// wait for all the jobs to be done
+	for _, doneChan := range doneChans {
+		<-doneChan
 	}
 	// fmt.Println(result)
 	// fmt.Println("--------------------------------")
