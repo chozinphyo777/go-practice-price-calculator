@@ -40,6 +40,9 @@ func NewTaxIncludedPriceJob(iom iomanager.IOManager, taxRate float64) *TaxInclud
 
 func (job *TaxIncludedPriceJob) Process(doneChan chan bool, errorChan chan error) {
 	err := job.LoadData() // load the data from the file into the job.InputPrices
+
+	// errorChan <- errors.New("an error occurred")
+
 	if err != nil {
 		errorChan <- err
 		return

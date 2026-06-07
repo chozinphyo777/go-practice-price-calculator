@@ -26,13 +26,21 @@ func main() {
 		// 	return
 		// }
 	}
-	for _, errorChan := range errorChans {
-		<-errorChan
+	for index := range taxRates {
+		select {
+		case err := <-errorChans[index]:
+			if err != nil {
+				fmt.Println("Error processing price job: ", err)
+			}
+		case <-doneChans[index]:
+			fmt.Println("Price job done!")
+		}
 	}
+
 	// wait for all the jobs to be done
-	for _, doneChan := range doneChans {
-		<-doneChan
-	}
+	// for _, doneChan := range doneChans {
+	// 	<-doneChan
+	// }
 	// fmt.Println(result)
 	// fmt.Println("--------------------------------")
 	// fmt.Println(result[0])
